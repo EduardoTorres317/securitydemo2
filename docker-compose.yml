@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: security-demo-2:3.0
+    ports:
+      - "8083:8083"
+    environment:
+      MYSQL_HOST: host.docker.internal
+      MYSQL_USER: edutorres         # Replace with your MySQL username
+      MYSQL_PASSWORD: Cabrera#3927 # Replace with your MySQL password
+      MYSQL_DATABASE: jdbc:mysql://34.75.125.58:3306/ordersdb       # Replace with your MySQL database name
