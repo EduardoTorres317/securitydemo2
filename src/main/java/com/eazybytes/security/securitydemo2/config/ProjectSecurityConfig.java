@@ -2,10 +2,6 @@ package com.eazybytes.security.securitydemo2.config;
 
 import com.eazybytes.security.securitydemo2.filters.JWTTokenGenerationFilter;
 import com.eazybytes.security.securitydemo2.filters.JWTTokenValidationFilter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -20,7 +16,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,20 +26,11 @@ public class ProjectSecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                // ... other security configurations like csrf, authorization, etc.
-                .csrf(csrf -> csrf.disable()) // CSRF often needs to be disabled for APIs
-                //.addFilterAfter(new JWTTokenGenerationFilter(), BasicAuthenticationFilter.class)
-                //.addFilterBefore(new JWTTokenValidationFilter(), BasicAuthenticationFilter.class)
-                //.formLogin((formLogin) ->
-                //        formLogin
-                //                .usernameParameter("username")
-                //                .passwordParameter("password")
-                //                .loginPage("/authentication/login")
-                //                .failureUrl("/authentication/login?failed")
-                //                .loginProcessingUrl("/authentication/login/process"))
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorizeRequests ->
-                authorizeRequests.requestMatchers("/orders", "/clients").authenticated()
+                authorizeRequests
                         .requestMatchers("/clients").hasRole("ADMIN")
+                        .requestMatchers("/orders").authenticated()
                         .requestMatchers("/contactUs","/notices","/error").permitAll())
                 .addFilterAfter(new JWTTokenGenerationFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new JWTTokenValidationFilter(), BasicAuthenticationFilter.class)
@@ -73,6 +59,8 @@ public class ProjectSecurityConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // Allow all headers
         configuration.setAllowedHeaders(List.of("*"));
+        // Expose Authorization header so client can read JWT
+        configuration.setExposedHeaders(List.of("Authorization"));
         // Allow credentials (e.g., cookies, authorization headers)
         configuration.setAllowCredentials(true);
         // Max age for preflight request cache
