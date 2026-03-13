@@ -15,9 +15,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.sql.DataSource;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class ProjectSecurityConfig {
@@ -25,9 +30,9 @@ public class ProjectSecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                //.requiresChannel(rcc -> rcc.anyRequest().requiresSecure()) // Only HTTPS
-                .csrf(csrfConfig -> csrfConfig.disable())
-                .cors(corsConfig -> corsConfig.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // ... other security configurations like csrf, authorization, etc.
+                .csrf(csrf -> csrf.disable()) // CSRF often needs to be disabled for APIs
                 //.addFilterAfter(new JWTTokenGenerationFilter(), BasicAuthenticationFilter.class)
                 //.addFilterBefore(new JWTTokenValidationFilter(), BasicAuthenticationFilter.class)
                 //.formLogin((formLogin) ->
@@ -57,6 +62,26 @@ public class ProjectSecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // Allow specific origins
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://www.example-client.com"));
+        // Allow specific methods (OPTIONS is important for preflight requests)
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Allow all headers
+        configuration.setAllowedHeaders(List.of("*"));
+        // Allow credentials (e.g., cookies, authorization headers)
+        configuration.setAllowCredentials(true);
+        // Max age for preflight request cache
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        // Apply this configuration to all paths
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
 }
