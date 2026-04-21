@@ -27,13 +27,10 @@ public class LoansController {
     }
 
     @GetMapping(path="/loans/installment/{clientId}/{loanId}")
-    public ResponseEntity<MonthlyInstallmentDto> fetchAccountDetails(@PathVariable
+    public ResponseEntity<MonthlyInstallmentDto> getInstallmentDetails(@PathVariable
                                                         Long clientId, @PathVariable Long loanId) {
         MonthlyInstallmentDto installment = loansService.getMonthlyLoanInstallment(loanId, clientId);
-
         return new ResponseEntity<>(installment, HttpStatus.OK);
-
-
     }
 
     @GetMapping(path="/loans/outstanding/{clientId}/{loanId}")
